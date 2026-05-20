@@ -136,7 +136,7 @@ export function SessionAlertOverlay({
           className="mt-4 space-y-1"
         >
           <p className="font-mono text-sm tabular text-[--color-ink-dim]">
-            Pregão {process.numero}
+            Processo {process.numero}
           </p>
           <p className="mx-auto max-w-lg font-serif text-lg italic leading-snug text-[--color-ink-2]">
             {process.objeto}
