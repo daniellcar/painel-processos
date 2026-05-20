@@ -54,6 +54,12 @@ export default async function AdminLayout({
                 Usuários
               </Link>
               <Link
+                href="/admin/logs"
+                className="label-eyebrow hover:text-[--color-claret]"
+              >
+                Logs
+              </Link>
+              <Link
                 href="/dashboard"
                 target="_blank"
                 rel="noreferrer"
