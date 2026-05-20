@@ -139,32 +139,35 @@ export function SessionAlertOverlay({
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: EASE, delay: 0.75 }}
-          className="relative mt-12 w-full max-w-3xl bg-[--color-paper-soft] px-12 py-9"
+          className="relative mt-12 w-full max-w-3xl px-12 py-9"
           style={{
-            border: "1px solid var(--color-rule-strong)",
+            border: "1px solid rgba(248,244,233,0.18)",
             boxShadow:
-              "0 40px 90px -10px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.05), 0 0 120px -30px rgba(179,58,42,0.18)",
+              "0 0 0 1px rgba(248,244,233,0.05), 0 0 120px -30px rgba(179,58,42,0.25)",
           }}
         >
           {/* Bordas duplas internas — proclamação */}
-          <div className="pointer-events-none absolute inset-2.5 border border-[--color-rule-strong]" />
+          <div
+            className="pointer-events-none absolute inset-2.5"
+            style={{ border: "1px solid rgba(248,244,233,0.12)" }}
+          />
 
           <dl className="relative grid grid-cols-[140px_1fr] gap-x-8 gap-y-4 text-left">
-            <dt className="font-sans text-[10px] font-semibold uppercase tracking-[0.28em] text-[--color-ink-2]">
+            <dt className="font-sans text-[10px] font-semibold uppercase tracking-[0.28em] text-[--color-paper-soft]/70">
               Processo
             </dt>
-            <dd className="font-mono text-2xl font-medium tabular text-[--color-ink]">
+            <dd className="font-mono text-2xl font-medium tabular text-[--color-paper-soft]">
               {process.numero}
             </dd>
 
-            <dt className="font-sans text-[10px] font-semibold uppercase tracking-[0.28em] text-[--color-ink-2]">
+            <dt className="font-sans text-[10px] font-semibold uppercase tracking-[0.28em] text-[--color-paper-soft]/70">
               Objeto
             </dt>
-            <dd className="font-serif text-2xl leading-snug text-[--color-ink]">
+            <dd className="font-serif text-2xl leading-snug text-[--color-paper-soft]">
               {process.objeto}
             </dd>
 
-            <dt className="font-sans text-[10px] font-semibold uppercase tracking-[0.28em] text-[--color-ink-2]">
+            <dt className="font-sans text-[10px] font-semibold uppercase tracking-[0.28em] text-[--color-paper-soft]/70">
               Status
             </dt>
             <dd className="flex items-center gap-3">
@@ -182,7 +185,7 @@ export function SessionAlertOverlay({
 
             {process.tags && process.tags.length > 0 && (
               <>
-                <dt className="font-sans text-[10px] font-semibold uppercase tracking-[0.28em] text-[--color-ink-2]">
+                <dt className="font-sans text-[10px] font-semibold uppercase tracking-[0.28em] text-[--color-paper-soft]/70">
                   Marcadores
                 </dt>
                 <dd className="flex flex-wrap gap-2">
