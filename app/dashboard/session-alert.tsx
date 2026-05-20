@@ -6,7 +6,6 @@ import type { Process } from "@/lib/types";
 import { contrastText } from "@/lib/contrast";
 
 const AUTO_DISMISS_SECONDS = 22;
-
 const EASE = [0.2, 0.8, 0.2, 1] as const;
 
 export function SessionAlertOverlay({
@@ -38,14 +37,6 @@ export function SessionAlertOverlay({
       }).format(new Date(process.data_sessao))
     : "—";
 
-  const now = new Date();
-  const dateLabel = new Intl.DateTimeFormat("pt-BR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(now);
-
   return (
     <motion.div
       key={process.id}
@@ -54,184 +45,220 @@ export function SessionAlertOverlay({
       exit={{ opacity: 0 }}
       transition={{ duration: 0.35 }}
       onClick={onDismiss}
-      className="fixed inset-0 z-[100] flex cursor-pointer flex-col items-center justify-center"
+      className="fixed inset-0 z-[100] flex cursor-pointer flex-col items-center justify-center px-8"
       style={{
-        backgroundColor: "#05070D",
-        // Vinheta — sutil halo de tinta no centro, breu pesado nas bordas
+        backgroundColor: "#F5D6CC",
         backgroundImage:
-          "radial-gradient(ellipse at center, rgba(14,26,45,0.85) 0%, #000 100%)",
+          "radial-gradient(ellipse at center, #F8DFD6 0%, #EDC4B6 100%)",
       }}
     >
-      {/* Textura de papel discreta sobre o fundo escuro */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.08] mix-blend-overlay grain"
-      />
-
-      {/* Banner superior — faixa de claret */}
+      {/* Card — branco arredondado flutuando */}
       <motion.div
-        initial={{ y: -120, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
+        initial={{ opacity: 0, y: 30, scale: 0.92 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.55, ease: EASE }}
-        className="absolute top-0 left-0 right-0 z-10 border-b-[3px] border-double border-[--color-paper-warm]/40 bg-[--color-claret-deep]"
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-2xl rounded-[2.25rem] bg-white px-12 pb-12 pt-24 text-center"
+        style={{
+          boxShadow:
+            "0 30px 60px -20px rgba(110,40,30,0.35), 0 10px 30px -10px rgba(110,40,30,0.18)",
+        }}
       >
-        <div className="flex items-center justify-between px-12 py-4">
-          <div className="flex items-center gap-4">
-            <span className="relative inline-block h-2 w-2 rounded-full bg-[--color-paper-warm]">
-              <span
-                className="absolute inset-0 rounded-full bg-[--color-paper-warm]"
-                style={{ animation: "live-pulse 2.4s ease-out infinite" }}
-              />
-            </span>
-            <span className="font-sans text-xs font-bold uppercase tracking-[0.45em] text-[--color-paper-soft]">
-              Ao vivo · Pregão em abertura
-            </span>
-          </div>
-          <span className="font-serif text-2xl italic text-[--color-paper-soft]">
-            §  edição extra  §
-          </span>
-          <span className="font-mono text-xs uppercase tracking-[0.35em] text-[--color-paper-soft]">
-            {dateLabel}
-          </span>
-        </div>
-      </motion.div>
-
-      {/* Conteúdo principal */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.94 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.7, ease: EASE, delay: 0.25 }}
-        className="relative z-0 mx-auto flex w-full max-w-6xl flex-col items-center px-12"
-      >
-        {/* Hora marcada */}
+        {/* Sino flutuante — círculo branco com sombra, badge vermelho com contador */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: EASE, delay: 0.45 }}
-          className="flex items-baseline gap-6"
+          initial={{ y: -8, scale: 0.7, opacity: 0 }}
+          animate={{ y: 0, scale: 1, opacity: 1 }}
+          transition={{ duration: 0.55, ease: EASE, delay: 0.15 }}
+          className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2"
         >
-          <span className="font-sans text-[10px] font-semibold uppercase tracking-[0.5em] text-[--color-paper-soft]">
-            Hora marcada
-          </span>
-          <span className="font-serif text-7xl tabular leading-none text-[--color-paper-soft] sm:text-8xl">
-            {sessionTime.replace(":", " : ")}
+          <motion.div
+            animate={{ rotate: [0, -14, 12, -8, 6, 0] }}
+            transition={{
+              duration: 1.1,
+              ease: "easeInOut",
+              delay: 0.6,
+              repeat: 1,
+              repeatDelay: 3,
+            }}
+            className="relative flex h-28 w-28 items-center justify-center rounded-full bg-white"
+            style={{
+              boxShadow:
+                "0 12px 30px -6px rgba(110,40,30,0.32), 0 4px 8px -2px rgba(110,40,30,0.18)",
+            }}
+          >
+            <BellIcon className="h-16 w-16" />
+            {/* Badge contador */}
+            <span
+              className="absolute right-1 top-2 flex h-7 w-7 items-center justify-center rounded-full text-[13px] font-bold leading-none text-white"
+              style={{
+                backgroundColor: "#E63946",
+                boxShadow:
+                  "0 0 0 3px #FFFFFF, 0 2px 6px rgba(230,57,70,0.45)",
+                fontFamily: "var(--font-sans)",
+              }}
+            >
+              1
+            </span>
+          </motion.div>
+        </motion.div>
+
+        {/* Hora marcada — sutil acima do título */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.35 }}
+          className="flex items-center justify-center gap-2"
+        >
+          <span
+            className="inline-block h-1.5 w-1.5 rounded-full"
+            style={{ backgroundColor: "#E63946" }}
+          />
+          <span className="font-sans text-[11px] font-semibold uppercase tracking-[0.32em] text-[--color-ink-dim]">
+            Hora marcada · {sessionTime}
           </span>
         </motion.div>
 
         {/* Headline */}
         <motion.h1
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: EASE, delay: 0.55 }}
-          className="mt-6 text-center font-serif italic leading-[0.85] text-[--color-paper-soft]"
-          style={{ fontSize: "clamp(6rem, 14vw, 11rem)" }}
+          transition={{ duration: 0.55, ease: EASE, delay: 0.45 }}
+          className="mt-3 font-sans text-5xl font-bold tracking-tight text-[--color-ink] sm:text-6xl"
         >
-          Abrir{" "}
-          <em
-            className="text-[--color-rust]"
-            style={{ textShadow: "0 0 28px rgba(179,58,42,0.35)" }}
-          >
-            sessão.
-          </em>
+          Abrir sessão
         </motion.h1>
 
-        {/* Card do processo — proclamação em papel sobre o breu */}
+        {/* Subtítulo — número + objeto */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: EASE, delay: 0.75 }}
-          className="relative mt-12 w-full max-w-3xl px-12 py-9"
-          style={{
-            border: "1px solid rgba(248,244,233,0.18)",
-            boxShadow:
-              "0 0 0 1px rgba(248,244,233,0.05), 0 0 120px -30px rgba(179,58,42,0.25)",
-          }}
+          transition={{ duration: 0.55, ease: EASE, delay: 0.55 }}
+          className="mt-4 space-y-1"
         >
-          {/* Bordas duplas internas — proclamação */}
-          <div
-            className="pointer-events-none absolute inset-2.5"
-            style={{ border: "1px solid rgba(248,244,233,0.12)" }}
-          />
+          <p className="font-mono text-sm tabular text-[--color-ink-dim]">
+            Pregão {process.numero}
+          </p>
+          <p className="mx-auto max-w-lg font-serif text-lg italic leading-snug text-[--color-ink-2]">
+            {process.objeto}
+          </p>
+        </motion.div>
 
-          <dl className="relative grid grid-cols-[140px_1fr] gap-x-8 gap-y-4 text-left">
-            <dt className="font-sans text-[10px] font-semibold uppercase tracking-[0.28em] text-[--color-paper-soft]/70">
-              Processo
-            </dt>
-            <dd className="font-mono text-2xl font-medium tabular text-[--color-paper-soft]">
-              {process.numero}
-            </dd>
+        {/* Status + Tags */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55, ease: EASE, delay: 0.65 }}
+          className="mt-6 flex flex-wrap items-center justify-center gap-2"
+        >
+          <span
+            className="inline-flex items-center gap-2 rounded-full border px-3 py-1 font-sans text-xs font-semibold uppercase tracking-wider"
+            style={{
+              color: process.cor,
+              borderColor: `${process.cor}40`,
+              backgroundColor: `${process.cor}12`,
+            }}
+          >
+            <span
+              className="inline-block h-1.5 w-1.5 rounded-full"
+              style={{ backgroundColor: process.cor }}
+            />
+            {process.status}
+          </span>
+          {process.tags?.map((t, i) => (
+            <span
+              key={i}
+              style={{
+                backgroundColor: t.color,
+                color: contrastText(t.color),
+              }}
+              className="inline-flex items-center rounded-full px-3 py-1 font-sans text-xs font-bold uppercase tracking-wider"
+            >
+              {t.label}
+            </span>
+          ))}
+        </motion.div>
 
-            <dt className="font-sans text-[10px] font-semibold uppercase tracking-[0.28em] text-[--color-paper-soft]/70">
-              Objeto
-            </dt>
-            <dd className="font-serif text-2xl leading-snug text-[--color-paper-soft]">
-              {process.objeto}
-            </dd>
-
-            <dt className="font-sans text-[10px] font-semibold uppercase tracking-[0.28em] text-[--color-paper-soft]/70">
-              Status
-            </dt>
-            <dd className="flex items-center gap-3">
-              <span
-                className="inline-block h-2 w-2 flex-none rounded-full"
-                style={{ backgroundColor: process.cor }}
+        {/* Botão pill — ação primária */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55, ease: EASE, delay: 0.75 }}
+          className="mt-9 flex flex-col items-center gap-3"
+        >
+          <button
+            type="button"
+            onClick={onDismiss}
+            className="group inline-flex items-center gap-3 rounded-full px-10 py-3.5 font-sans text-base font-bold text-white transition-all hover:brightness-110 active:scale-[0.98]"
+            style={{
+              backgroundColor: "#E63946",
+              boxShadow:
+                "0 10px 24px -8px rgba(230,57,70,0.55), 0 4px 10px -2px rgba(230,57,70,0.35)",
+            }}
+          >
+            Visualizar
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              className="transition-transform group-hover:translate-x-0.5"
+            >
+              <path
+                d="M3 8 h10 M9 4 l4 4 -4 4"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               />
-              <span
-                className="font-sans text-xl font-semibold uppercase tracking-wide"
-                style={{ color: process.cor }}
-              >
-                {process.status}
-              </span>
-            </dd>
-
-            {process.tags && process.tags.length > 0 && (
-              <>
-                <dt className="font-sans text-[10px] font-semibold uppercase tracking-[0.28em] text-[--color-paper-soft]/70">
-                  Marcadores
-                </dt>
-                <dd className="flex flex-wrap gap-2">
-                  {process.tags.map((t, i) => (
-                    <span
-                      key={i}
-                      style={{
-                        backgroundColor: t.color,
-                        color: contrastText(t.color),
-                      }}
-                      className="inline-flex items-center rounded px-3 py-1 font-sans text-xs font-bold uppercase tracking-[0.18em]"
-                    >
-                      {t.label}
-                    </span>
-                  ))}
-                </dd>
-              </>
-            )}
-          </dl>
+            </svg>
+          </button>
+          <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-[--color-ink-mute]">
+            Fecha automaticamente em {String(remaining).padStart(2, "0")}s
+          </span>
         </motion.div>
       </motion.div>
-
-      {/* Banner inferior */}
-      <motion.div
-        initial={{ y: 120, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.55, ease: EASE, delay: 0.1 }}
-        className="absolute bottom-0 left-0 right-0 border-t-[3px] border-double border-[--color-paper-warm]/40 bg-[--color-claret-deep]"
-      >
-        <div className="flex items-center justify-between px-12 py-4">
-          <span className="font-sans text-xs uppercase tracking-[0.32em] text-[--color-paper-soft]">
-            Toque para dispensar
-          </span>
-          <div className="flex items-baseline gap-3">
-            <span className="font-sans text-[10px] uppercase tracking-[0.32em] text-[--color-paper-soft]">
-              Auto-fecha em
-            </span>
-            <span className="font-mono text-2xl font-semibold tabular text-[--color-paper-soft]">
-              {String(remaining).padStart(2, "0")}s
-            </span>
-          </div>
-          <span className="font-sans text-xs uppercase tracking-[0.32em] text-[--color-paper-soft]">
-            Anote no diário
-          </span>
-        </div>
-      </motion.div>
     </motion.div>
+  );
+}
+
+function BellIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 100 100" fill="none" className={className}>
+      {/* Sombra inferior */}
+      <ellipse cx="50" cy="92" rx="22" ry="3" fill="#000" opacity="0.06" />
+      {/* Alça */}
+      <rect
+        x="45.5"
+        y="9"
+        width="9"
+        height="7"
+        rx="2.5"
+        fill="#D99826"
+      />
+      {/* Corpo do sino */}
+      <path
+        d="M50 16 C34 16 26 30 26 46 L26 62 Q26 70 20 76 L80 76 Q74 70 74 62 L74 46 C74 30 66 16 50 16 Z"
+        fill="#F5BC2C"
+        stroke="#D99826"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+      {/* Brilho no corpo */}
+      <path
+        d="M34 32 Q34 22 42 20"
+        stroke="#FFE08C"
+        strokeWidth="3"
+        strokeLinecap="round"
+        fill="none"
+      />
+      {/* Faixa inferior */}
+      <path
+        d="M22 72 Q26 70 28 66 L72 66 Q74 70 78 72 Z"
+        fill="#E5A920"
+      />
+      {/* Badalo */}
+      <circle cx="50" cy="86" r="6" fill="#E5A920" />
+      <circle cx="48" cy="84" r="1.8" fill="#FFD96A" />
+    </svg>
   );
 }
