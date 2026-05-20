@@ -1,13 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import type { Process, Tag } from "@/lib/types";
 import { contrastText } from "@/lib/contrast";
+import { isAudioUnlocked, playBellSequence, unlockAudio } from "@/lib/bell-sound";
+import { SessionAlertOverlay } from "./session-alert";
 
 const ROWS_PER_PAGE = 6;
 const PAGE_DURATION_MS = 7500;
+// Janela após o horário em que ainda dispara alerta (60s).
+// Evita alertas "velhos" caso a página recarregue muito depois.
+const ALERT_WINDOW_MS = 60_000;
 
 const TRANSITION = { duration: 0.7, ease: [0.2, 0.8, 0.2, 1] as const };
 
@@ -15,6 +20,9 @@ export function Board({ initial }: { initial: Process[] }) {
   const [processes, setProcesses] = useState<Process[]>(initial);
   const [pageIndex, setPageIndex] = useState(0);
   const [now, setNow] = useState<Date | null>(null);
+  const [alertQueue, setAlertQueue] = useState<Process[]>([]);
+  const [audioReady, setAudioReady] = useState(false);
+  const alertedIdsRef = useRef<Set<string>>(new Set());
 
   // Hydrate clock client-side only
   useEffect(() => {
@@ -22,6 +30,85 @@ export function Board({ initial }: { initial: Process[] }) {
     const id = window.setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
+
+  // Marca todas as sessões já passadas (fora da janela) como "já alertadas"
+  // no mount inicial, para não disparar alerta retroativo ao recarregar.
+  useEffect(() => {
+    const nowMs = Date.now();
+    for (const p of initial) {
+      if (!p.data_sessao) continue;
+      const sessionMs = new Date(p.data_sessao).getTime();
+      if (nowMs - sessionMs >= ALERT_WINDOW_MS) {
+        alertedIdsRef.current.add(p.id);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Destrava o AudioContext na primeira interação do usuário.
+  useEffect(() => {
+    async function enable() {
+      await unlockAudio();
+      if (isAudioUnlocked()) setAudioReady(true);
+    }
+    function handler() {
+      enable();
+      window.removeEventListener("click", handler);
+      window.removeEventListener("keydown", handler);
+      window.removeEventListener("touchstart", handler);
+    }
+    window.addEventListener("click", handler);
+    window.addEventListener("keydown", handler);
+    window.addEventListener("touchstart", handler);
+    return () => {
+      window.removeEventListener("click", handler);
+      window.removeEventListener("keydown", handler);
+      window.removeEventListener("touchstart", handler);
+    };
+  }, []);
+
+  // Detecção de gatilho — verifica a cada tick do relógio.
+  useEffect(() => {
+    if (!now) return;
+    const nowMs = now.getTime();
+    const triggered: Process[] = [];
+    for (const p of processes) {
+      if (!p.data_sessao || alertedIdsRef.current.has(p.id)) continue;
+      const sessionMs = new Date(p.data_sessao).getTime();
+      const diff = nowMs - sessionMs;
+      if (diff >= 0 && diff < ALERT_WINDOW_MS) {
+        triggered.push(p);
+        alertedIdsRef.current.add(p.id);
+      }
+    }
+    if (triggered.length > 0) {
+      setAlertQueue((q) => [...q, ...triggered]);
+      playBellSequence();
+    }
+  }, [now, processes]);
+
+  // Atalho de teste: pressionar "T" dispara um alerta com uma sessão de amostra.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key.toLowerCase() !== "t") return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const target = e.target as HTMLElement | null;
+      if (target && /input|textarea|select/i.test(target.tagName)) return;
+      const sample =
+        processes.find((p) => p.data_sessao) ?? processes[0];
+      if (!sample) return;
+      setAlertQueue((q) => [...q, sample]);
+      playBellSequence();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [processes]);
+
+  const dismissAlert = useCallback(() => {
+    setAlertQueue((q) => q.slice(1));
+  }, []);
+
+  const currentAlert = alertQueue[0];
 
   // Realtime: processes
   useEffect(() => {
@@ -148,6 +235,29 @@ export function Board({ initial }: { initial: Process[] }) {
           </span>
         </div>
       </footer>
+
+      {/* Indicador discreto do estado do som */}
+      <div className="pointer-events-none absolute right-6 top-6 z-40 flex items-center gap-2">
+        <span
+          className={`inline-block h-1.5 w-1.5 rounded-full ${
+            audioReady ? "bg-[--color-emerald]" : "bg-[--color-ink-mute]"
+          }`}
+        />
+        <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-[--color-ink-dim]">
+          {audioReady ? "som ativo" : "toque a tela para ativar som"}
+        </span>
+      </div>
+
+      {/* Alerta de abertura de sessão — overlay editorial dramático */}
+      <AnimatePresence>
+        {currentAlert && (
+          <SessionAlertOverlay
+            key={currentAlert.id + "-" + alertQueue.length}
+            process={currentAlert}
+            onDismiss={dismissAlert}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
