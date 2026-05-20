@@ -82,14 +82,14 @@ export function SessionAlertOverlay({
                 style={{ animation: "live-pulse 2.4s ease-out infinite" }}
               />
             </span>
-            <span className="font-sans text-xs font-bold uppercase tracking-[0.45em] text-[--color-paper-warm]">
+            <span className="font-sans text-xs font-bold uppercase tracking-[0.45em] text-[--color-paper-soft]">
               Ao vivo · Pregão em abertura
             </span>
           </div>
-          <span className="font-serif text-2xl italic text-[--color-paper-warm]">
+          <span className="font-serif text-2xl italic text-[--color-paper-soft]">
             §  edição extra  §
           </span>
-          <span className="font-mono text-xs uppercase tracking-[0.35em] text-[--color-paper-warm]/80">
+          <span className="font-mono text-xs uppercase tracking-[0.35em] text-[--color-paper-soft]">
             {dateLabel}
           </span>
         </div>
@@ -109,7 +109,7 @@ export function SessionAlertOverlay({
           transition={{ duration: 0.5, ease: EASE, delay: 0.45 }}
           className="flex items-baseline gap-6"
         >
-          <span className="font-sans text-[10px] font-semibold uppercase tracking-[0.5em] text-[--color-paper-warm]/70">
+          <span className="font-sans text-[10px] font-semibold uppercase tracking-[0.5em] text-[--color-paper-soft]">
             Hora marcada
           </span>
           <span className="font-serif text-7xl tabular leading-none text-[--color-paper-soft] sm:text-8xl">
@@ -150,21 +150,21 @@ export function SessionAlertOverlay({
           <div className="pointer-events-none absolute inset-2.5 border border-[--color-rule-strong]" />
 
           <dl className="relative grid grid-cols-[140px_1fr] gap-x-8 gap-y-4 text-left">
-            <dt className="font-sans text-[10px] font-semibold uppercase tracking-[0.28em] text-[--color-ink-dim]">
+            <dt className="font-sans text-[10px] font-semibold uppercase tracking-[0.28em] text-[--color-ink-2]">
               Processo
             </dt>
             <dd className="font-mono text-2xl font-medium tabular text-[--color-ink]">
               {process.numero}
             </dd>
 
-            <dt className="font-sans text-[10px] font-semibold uppercase tracking-[0.28em] text-[--color-ink-dim]">
+            <dt className="font-sans text-[10px] font-semibold uppercase tracking-[0.28em] text-[--color-ink-2]">
               Objeto
             </dt>
             <dd className="font-serif text-2xl leading-snug text-[--color-ink]">
               {process.objeto}
             </dd>
 
-            <dt className="font-sans text-[10px] font-semibold uppercase tracking-[0.28em] text-[--color-ink-dim]">
+            <dt className="font-sans text-[10px] font-semibold uppercase tracking-[0.28em] text-[--color-ink-2]">
               Status
             </dt>
             <dd className="flex items-center gap-3">
@@ -182,7 +182,7 @@ export function SessionAlertOverlay({
 
             {process.tags && process.tags.length > 0 && (
               <>
-                <dt className="font-sans text-[10px] font-semibold uppercase tracking-[0.28em] text-[--color-ink-dim]">
+                <dt className="font-sans text-[10px] font-semibold uppercase tracking-[0.28em] text-[--color-ink-2]">
                   Marcadores
                 </dt>
                 <dd className="flex flex-wrap gap-2">
@@ -213,18 +213,18 @@ export function SessionAlertOverlay({
         className="absolute bottom-0 left-0 right-0 border-t-[3px] border-double border-[--color-paper-warm]/40 bg-[--color-claret-deep]"
       >
         <div className="flex items-center justify-between px-12 py-4">
-          <span className="font-sans text-xs uppercase tracking-[0.32em] text-[--color-paper-warm]">
+          <span className="font-sans text-xs uppercase tracking-[0.32em] text-[--color-paper-soft]">
             Toque para dispensar
           </span>
           <div className="flex items-baseline gap-3">
-            <span className="font-sans text-[10px] uppercase tracking-[0.32em] text-[--color-paper-warm]/70">
+            <span className="font-sans text-[10px] uppercase tracking-[0.32em] text-[--color-paper-soft]">
               Auto-fecha em
             </span>
             <span className="font-mono text-2xl font-semibold tabular text-[--color-paper-soft]">
               {String(remaining).padStart(2, "0")}s
             </span>
           </div>
-          <span className="font-sans text-xs uppercase tracking-[0.32em] text-[--color-paper-warm]">
+          <span className="font-sans text-xs uppercase tracking-[0.32em] text-[--color-paper-soft]">
             Anote no diário
           </span>
         </div>
