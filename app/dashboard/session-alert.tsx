@@ -54,11 +54,12 @@ export function SessionAlertOverlay({
       exit={{ opacity: 0 }}
       transition={{ duration: 0.35 }}
       onClick={onDismiss}
-      className="fixed inset-0 z-[100] flex cursor-pointer flex-col items-center justify-center bg-[--color-ink]"
+      className="fixed inset-0 z-[100] flex cursor-pointer flex-col items-center justify-center"
       style={{
-        // Vinheta sutil — escurece bordas para dar profundidade
+        backgroundColor: "#05070D",
+        // Vinheta — sutil halo de tinta no centro, breu pesado nas bordas
         backgroundImage:
-          "radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.45) 100%)",
+          "radial-gradient(ellipse at center, rgba(14,26,45,0.85) 0%, #000 100%)",
       }}
     >
       {/* Textura de papel discreta sobre o fundo escuro */}
@@ -138,11 +139,11 @@ export function SessionAlertOverlay({
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: EASE, delay: 0.75 }}
-          className="relative mt-12 w-full max-w-3xl bg-[--color-paper-soft] px-12 py-9 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.55)]"
+          className="relative mt-12 w-full max-w-3xl bg-[--color-paper-soft] px-12 py-9"
           style={{
             border: "1px solid var(--color-rule-strong)",
             boxShadow:
-              "0 30px 60px -15px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)",
+              "0 40px 90px -10px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.05), 0 0 120px -30px rgba(179,58,42,0.18)",
           }}
         >
           {/* Bordas duplas internas — proclamação */}
