@@ -22,7 +22,9 @@ export function Board({ initial }: { initial: Process[] }) {
   const [now, setNow] = useState<Date | null>(null);
   const [alertQueue, setAlertQueue] = useState<Process[]>([]);
   const [audioReady, setAudioReady] = useState(false);
-  const alertedIdsRef = useRef<Set<string>>(new Set());
+  // Chave de "já alertado" combina id + data_sessao — mudou a data,
+  // nova chave, novo alerta autorizado.
+  const alertedKeysRef = useRef<Set<string>>(new Set());
 
   // Hydrate clock client-side only
   useEffect(() => {
@@ -39,7 +41,7 @@ export function Board({ initial }: { initial: Process[] }) {
       if (!p.data_sessao) continue;
       const sessionMs = new Date(p.data_sessao).getTime();
       if (nowMs - sessionMs >= ALERT_WINDOW_MS) {
-        alertedIdsRef.current.add(p.id);
+        alertedKeysRef.current.add(`${p.id}:${p.data_sessao}`);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -73,12 +75,14 @@ export function Board({ initial }: { initial: Process[] }) {
     const nowMs = now.getTime();
     const triggered: Process[] = [];
     for (const p of processes) {
-      if (!p.data_sessao || alertedIdsRef.current.has(p.id)) continue;
+      if (!p.data_sessao) continue;
+      const key = `${p.id}:${p.data_sessao}`;
+      if (alertedKeysRef.current.has(key)) continue;
       const sessionMs = new Date(p.data_sessao).getTime();
       const diff = nowMs - sessionMs;
       if (diff >= 0 && diff < ALERT_WINDOW_MS) {
         triggered.push(p);
-        alertedIdsRef.current.add(p.id);
+        alertedKeysRef.current.add(key);
       }
     }
     if (triggered.length > 0) {
