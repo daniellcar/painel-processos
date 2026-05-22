@@ -7,14 +7,20 @@ import type { Process, Tag } from "@/lib/types";
 import { contrastText } from "@/lib/contrast";
 import { isAudioUnlocked, playBellSequence, unlockAudio } from "@/lib/bell-sound";
 import { SessionAlertOverlay } from "./session-alert";
+import { CalendarView } from "./calendar-view";
 
 const ROWS_PER_PAGE = 6;
 const PAGE_DURATION_MS = 7500;
+const CALENDAR_DURATION_MS = 12000;
 // Janela após o horário em que ainda dispara alerta (60s).
 // Evita alertas "velhos" caso a página recarregue muito depois.
 const ALERT_WINDOW_MS = 60_000;
 
 const TRANSITION = { duration: 0.7, ease: [0.2, 0.8, 0.2, 1] as const };
+
+type PageContent =
+  | { type: "list"; rows: Process[] }
+  | { type: "calendar" };
 
 export function Board({ initial }: { initial: Process[] }) {
   const [processes, setProcesses] = useState<Process[]>(initial);
@@ -141,12 +147,13 @@ export function Board({ initial }: { initial: Process[] }) {
     [processes],
   );
 
-  const pages = useMemo(() => {
-    const chunks: Process[][] = [];
+  const pages = useMemo<PageContent[]>(() => {
+    const chunks: PageContent[] = [];
     for (let i = 0; i < boardSorted.length; i += ROWS_PER_PAGE) {
-      chunks.push(boardSorted.slice(i, i + ROWS_PER_PAGE));
+      chunks.push({ type: "list", rows: boardSorted.slice(i, i + ROWS_PER_PAGE) });
     }
-    if (chunks.length === 0) chunks.push([]);
+    if (chunks.length === 0) chunks.push({ type: "list", rows: [] });
+    chunks.push({ type: "calendar" });
     return chunks;
   }, [boardSorted]);
 
@@ -156,14 +163,16 @@ export function Board({ initial }: { initial: Process[] }) {
     if (pageIndex >= totalPages) setPageIndex(0);
   }, [totalPages, pageIndex]);
 
+  const currentPage = pages[pageIndex];
+
   useEffect(() => {
+    const duration =
+      currentPage?.type === "calendar" ? CALENDAR_DURATION_MS : PAGE_DURATION_MS;
     const timer = window.setTimeout(() => {
       setPageIndex((p) => (p + 1) % totalPages);
-    }, PAGE_DURATION_MS);
+    }, duration);
     return () => clearTimeout(timer);
-  }, [pageIndex, totalPages]);
-
-  const currentPage = pages[pageIndex];
+  }, [pageIndex, totalPages, currentPage]);
 
   return (
     <div className="board-paper relative flex min-h-screen flex-col">
@@ -208,7 +217,11 @@ export function Board({ initial }: { initial: Process[] }) {
             exit={{ opacity: 0, y: -14 }}
             transition={TRANSITION}
           >
-            <BoardPanel rows={currentPage ?? []} now={now} />
+            {currentPage?.type === "calendar" ? (
+              <CalendarView processes={processes} now={now} />
+            ) : (
+              <BoardPanel rows={currentPage?.rows ?? []} now={now} />
+            )}
           </motion.div>
         </AnimatePresence>
       </main>
@@ -231,7 +244,9 @@ export function Board({ initial }: { initial: Process[] }) {
             <span className="label-eyebrow">
               Total · <span className="text-[--color-ink] tabular">{processes.length}</span>
             </span>
-            <span className="label-eyebrow">Listagem geral</span>
+            <span className="label-eyebrow">
+              {currentPage?.type === "calendar" ? "Agenda mensal" : "Listagem geral"}
+            </span>
           </div>
 
           <span className="label-eyebrow">
