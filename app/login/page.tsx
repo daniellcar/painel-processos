@@ -32,9 +32,12 @@ export default function LoginPage() {
 
             <blockquote className="border-l-2 border-[--color-claret] pl-6">
               <p className="font-serif text-2xl italic leading-snug text-[--color-ink-2]">
-                "Quem cadastra, edita. Qualquer um observa pelo telão público."
+                &ldquo;Se você fracassar em planejar, planeja-se para o
+                fracasso.&rdquo;
               </p>
-              <footer className="mt-3 label-eyebrow">— Princípio de operação</footer>
+              <footer className="mt-3 label-eyebrow text-[--color-claret]">
+                — Ronny Charles
+              </footer>
             </blockquote>
           </div>
 
