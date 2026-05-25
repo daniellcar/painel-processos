@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type { Process, Tag } from "@/lib/types";
 import { contrastText } from "@/lib/contrast";
 
@@ -22,9 +22,10 @@ type Props = {
   initial?: Process;
   action: (formData: FormData) => Promise<{ ok: false; error: string } | undefined>;
   submitLabel: string;
+  knownTags?: Tag[];
 };
 
-export function ProcessForm({ initial, action, submitLabel }: Props) {
+export function ProcessForm({ initial, action, submitLabel, knownTags = [] }: Props) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [color, setColor] = useState(initial?.cor ?? PRESET_COLORS[0].value);
@@ -32,13 +33,78 @@ export function ProcessForm({ initial, action, submitLabel }: Props) {
   const [tags, setTags] = useState<Tag[]>(initial?.tags ?? []);
   const [newTagLabel, setNewTagLabel] = useState("");
   const [newTagColor, setNewTagColor] = useState(PRESET_COLORS[0].value);
+  const [suggestOpen, setSuggestOpen] = useState(false);
+  const [suggestIndex, setSuggestIndex] = useState(0);
+  const suggestRef = useRef<HTMLDivElement | null>(null);
+  const tagInputRef = useRef<HTMLInputElement | null>(null);
 
-  function addTag() {
-    const label = newTagLabel.trim();
-    if (!label) return;
-    if (tags.some((t) => t.label.toLowerCase() === label.toLowerCase())) return;
-    setTags([...tags, { label, color: newTagColor }]);
+  const suggestions = useMemo(() => {
+    const term = newTagLabel.trim().toLowerCase();
+    if (!term) return [];
+    const used = new Set(tags.map((t) => t.label.toLowerCase()));
+    return knownTags
+      .filter(
+        (t) =>
+          t.label.toLowerCase().includes(term) &&
+          !used.has(t.label.toLowerCase()),
+      )
+      .slice(0, 8);
+  }, [newTagLabel, knownTags, tags]);
+
+  // Sempre acessar pelo índice efetivo evita estados intermediários que
+  // forçariam um setState dentro de useEffect só para "consertar" o range.
+  const activeSuggestIndex =
+    suggestions.length === 0
+      ? 0
+      : Math.min(Math.max(suggestIndex, 0), suggestions.length - 1);
+
+  function handleTagLabelChange(value: string) {
+    setNewTagLabel(value);
+    setSuggestOpen(true);
+    setSuggestIndex(0);
+    // Se a label bate exatamente com uma tag conhecida, alinha a cor
+    // automaticamente — Enter já cria a tag com a cor antiga.
+    const term = value.trim().toLowerCase();
+    if (!term) return;
+    const exact = knownTags.find((t) => t.label.toLowerCase() === term);
+    if (exact) setNewTagColor(exact.color);
+  }
+
+  // Fecha dropdown ao clicar fora.
+  useEffect(() => {
+    function onClick(e: MouseEvent) {
+      if (!suggestRef.current) return;
+      if (suggestRef.current.contains(e.target as Node)) return;
+      if (tagInputRef.current?.contains(e.target as Node)) return;
+      setSuggestOpen(false);
+    }
+    window.addEventListener("mousedown", onClick);
+    return () => window.removeEventListener("mousedown", onClick);
+  }, []);
+
+  function addTag(override?: Tag) {
+    const candidate = override ?? {
+      label: newTagLabel.trim(),
+      color: newTagColor,
+    };
+    if (!candidate.label) return;
+    if (
+      tags.some(
+        (t) => t.label.toLowerCase() === candidate.label.toLowerCase(),
+      )
+    ) {
+      setNewTagLabel("");
+      setSuggestOpen(false);
+      return;
+    }
+    setTags([...tags, candidate]);
     setNewTagLabel("");
+    setSuggestOpen(false);
+    setSuggestIndex(0);
+  }
+
+  function pickSuggestion(t: Tag) {
+    addTag(t);
   }
 
   function removeTag(idx: number) {
@@ -110,7 +176,10 @@ export function ProcessForm({ initial, action, submitLabel }: Props) {
           />
         </Field>
 
-        <Field label="Tags" hint="opcional · ex: Rural, Urbano, PE, CP, Inex">
+        <Field
+          label="Tags"
+          hint="opcional · digite para reusar uma tag já cadastrada (mesma cor)"
+        >
           <div className="space-y-3">
             <div className="flex min-h-[2.25rem] flex-wrap items-center gap-2">
               {tags.length === 0 ? (
@@ -142,19 +211,94 @@ export function ProcessForm({ initial, action, submitLabel }: Props) {
             </div>
 
             <div className="flex items-stretch gap-2">
-              <input
-                type="text"
-                value={newTagLabel}
-                onChange={(e) => setNewTagLabel(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    addTag();
-                  }
-                }}
-                placeholder="Nova tag (Enter para adicionar)"
-                className="field-input field-mono flex-1"
-              />
+              <div className="relative flex-1">
+                <input
+                  ref={tagInputRef}
+                  type="text"
+                  value={newTagLabel}
+                  onChange={(e) => handleTagLabelChange(e.target.value)}
+                  onFocus={() => {
+                    if (newTagLabel.trim()) setSuggestOpen(true);
+                  }}
+                  onKeyDown={(e) => {
+                    if (suggestOpen && suggestions.length > 0) {
+                      if (e.key === "ArrowDown") {
+                        e.preventDefault();
+                        setSuggestIndex(
+                          (activeSuggestIndex + 1) % suggestions.length,
+                        );
+                        return;
+                      }
+                      if (e.key === "ArrowUp") {
+                        e.preventDefault();
+                        setSuggestIndex(
+                          (activeSuggestIndex - 1 + suggestions.length) %
+                            suggestions.length,
+                        );
+                        return;
+                      }
+                      if (e.key === "Escape") {
+                        e.preventDefault();
+                        setSuggestOpen(false);
+                        return;
+                      }
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        pickSuggestion(suggestions[activeSuggestIndex]);
+                        return;
+                      }
+                    }
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addTag();
+                    }
+                  }}
+                  placeholder="Nova tag (Enter para adicionar)"
+                  className="field-input field-mono w-full"
+                  autoComplete="off"
+                  role="combobox"
+                  aria-expanded={suggestOpen && suggestions.length > 0}
+                  aria-controls="tag-suggestions"
+                  aria-autocomplete="list"
+                />
+                {suggestOpen && suggestions.length > 0 && (
+                  <div
+                    ref={suggestRef}
+                    id="tag-suggestions"
+                    role="listbox"
+                    className="absolute left-0 right-0 top-full z-30 mt-1 max-h-72 overflow-auto border border-[--color-rule] bg-white shadow-lg"
+                  >
+                    {suggestions.map((t, i) => (
+                      <button
+                        key={t.label}
+                        type="button"
+                        role="option"
+                        aria-selected={i === activeSuggestIndex}
+                        onMouseEnter={() => setSuggestIndex(i)}
+                        onClick={() => pickSuggestion(t)}
+                        className={`flex w-full items-center justify-between gap-3 px-3 py-2 text-left transition ${
+                          i === activeSuggestIndex
+                            ? "bg-[--color-paper-soft]"
+                            : "bg-white"
+                        }`}
+                      >
+                        <span className="flex items-center gap-2">
+                          <span
+                            className="inline-block h-3 w-3 rounded-sm border border-black/10"
+                            style={{ backgroundColor: t.color }}
+                          />
+                          <span className="font-sans text-sm text-[--color-ink]">
+                            {t.label}
+                          </span>
+                        </span>
+                        <span className="font-mono text-[10px] uppercase tracking-wide text-[--color-ink-mute]">
+                          já usada
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               <input
                 type="color"
                 value={newTagColor}
@@ -164,7 +308,7 @@ export function ProcessForm({ initial, action, submitLabel }: Props) {
               />
               <button
                 type="button"
-                onClick={addTag}
+                onClick={() => addTag()}
                 className="btn btn-text whitespace-nowrap text-xs"
               >
                 + Adicionar

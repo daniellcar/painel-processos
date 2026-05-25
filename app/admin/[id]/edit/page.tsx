@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Process } from "@/lib/types";
 import { ProcessForm } from "../../process-form";
 import { updateProcess } from "../../actions";
+import { fetchKnownTags } from "../../tag-helpers";
 
 export default async function EditProcessPage({
   params,
@@ -22,6 +23,7 @@ export default async function EditProcessPage({
 
   const process = data as Process;
   const action = updateProcess.bind(null, id);
+  const knownTags = await fetchKnownTags();
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-12 sm:px-12">
@@ -52,7 +54,12 @@ export default async function EditProcessPage({
         </div>
       </header>
 
-      <ProcessForm initial={process} action={action} submitLabel="Salvar alterações" />
+      <ProcessForm
+        initial={process}
+        action={action}
+        submitLabel="Salvar alterações"
+        knownTags={knownTags}
+      />
     </div>
   );
 }

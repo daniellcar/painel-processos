@@ -1,8 +1,12 @@
 import Link from "next/link";
 import { ProcessForm } from "../process-form";
 import { createProcess } from "../actions";
+import { fetchKnownTags } from "../tag-helpers";
 
-export default function NewProcessPage() {
+export const dynamic = "force-dynamic";
+
+export default async function NewProcessPage() {
+  const knownTags = await fetchKnownTags();
   return (
     <div className="mx-auto max-w-7xl px-6 py-12 sm:px-12">
       <header className="mb-12 border-b border-[--color-rule] pb-6">
@@ -24,7 +28,11 @@ export default function NewProcessPage() {
         </p>
       </header>
 
-      <ProcessForm action={createProcess} submitLabel="Cadastrar processo" />
+      <ProcessForm
+        action={createProcess}
+        submitLabel="Cadastrar processo"
+        knownTags={knownTags}
+      />
     </div>
   );
 }
