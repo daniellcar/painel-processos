@@ -55,32 +55,36 @@ export async function GET(req: NextRequest) {
     views: [{ state: "frozen", ySplit: 1 }],
   });
 
+  // Quantas colunas de tag são necessárias para cobrir o processo com mais
+  // tags do conjunto exportado.
+  const maxTags = filtered.reduce(
+    (max, p) => Math.max(max, p.tags?.length ?? 0),
+    0,
+  );
+
+  const tagColumns = Array.from({ length: maxTags }, (_, i) => ({
+    header: `Tag ${i + 1}`,
+    key: `tag_${i + 1}`,
+    width: 18,
+  }));
+
   ws.columns = [
     { header: "Número", key: "numero", width: 22 },
     { header: "Objeto", key: "objeto", width: 60 },
     { header: "Status", key: "status", width: 32 },
-    { header: "Cor", key: "cor", width: 12 },
     {
       header: "Data da Sessão",
       key: "data_sessao",
       width: 22,
       style: { numFmt: "dd/mm/yyyy hh:mm" },
     },
-    { header: "Tags", key: "tags", width: 36 },
-    { header: "Tags (cores)", key: "tags_cores", width: 28 },
-    {
-      header: "Criado em",
-      key: "created_at",
-      width: 22,
-      style: { numFmt: "dd/mm/yyyy hh:mm" },
-    },
+    ...tagColumns,
     {
       header: "Atualizado em",
       key: "updated_at",
       width: 22,
       style: { numFmt: "dd/mm/yyyy hh:mm" },
     },
-    { header: "ID", key: "id", width: 38 },
   ];
 
   // Estiliza o cabeçalho.
@@ -95,17 +99,18 @@ export async function GET(req: NextRequest) {
   header.height = 22;
 
   for (const p of filtered) {
+    const tagFields: Record<string, string> = {};
+    const labels = (p.tags ?? []).map((t) => t.label);
+    for (let i = 0; i < maxTags; i++) {
+      tagFields[`tag_${i + 1}`] = labels[i] ?? "";
+    }
     ws.addRow({
       numero: p.numero,
       objeto: p.objeto,
       status: p.status,
-      cor: p.cor,
       data_sessao: p.data_sessao ? new Date(p.data_sessao) : null,
-      tags: (p.tags ?? []).map((t) => t.label).join("; "),
-      tags_cores: (p.tags ?? []).map((t) => t.color).join("; "),
-      created_at: p.created_at ? new Date(p.created_at) : null,
+      ...tagFields,
       updated_at: p.updated_at ? new Date(p.updated_at) : null,
-      id: p.id,
     });
   }
 
