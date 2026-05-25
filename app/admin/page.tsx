@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import type { Process } from "@/lib/types";
+import { Logo } from "@/app/components/logo";
 import { ProcessesExplorer } from "./processes-explorer";
 
 export const dynamic = "force-dynamic";
@@ -33,10 +34,8 @@ export default async function AdminPage() {
     <div className="mx-auto max-w-7xl px-6 py-8 sm:px-12">
       {/* Cabeçalho compacto: título + stats inline + ação */}
       <section className="mb-8 flex flex-wrap items-center justify-between gap-x-8 gap-y-4 border-b border-[--color-rule] pb-5">
-        <div className="flex items-baseline gap-3">
-          <span className="font-serif text-2xl italic text-[--color-claret]">
-            §
-          </span>
+        <div className="flex items-center gap-3">
+          <Logo size="sm" />
           <div>
             <p className="label-eyebrow text-[--color-claret]">
               Cadastro & gestão

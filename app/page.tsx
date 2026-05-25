@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "@/app/components/logo";
 
 export default function Home() {
   return (
@@ -8,8 +9,8 @@ export default function Home() {
       <div className="relative mx-auto flex min-h-screen max-w-7xl flex-col px-8 py-8 sm:px-12 sm:py-10">
         {/* Top bar */}
         <header className="flex items-center justify-between border-b border-[--color-rule] pb-5">
-          <div className="flex items-baseline gap-3">
-            <span className="font-serif text-2xl italic text-[--color-claret]">§</span>
+          <div className="flex items-center gap-3">
+            <Logo size="sm" priority />
             <span className="label-eyebrow">Painel de Processos</span>
           </div>
           <nav className="hidden items-center gap-8 sm:flex">

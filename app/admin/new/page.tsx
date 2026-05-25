@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "@/app/components/logo";
 import { ProcessForm } from "../process-form";
 import { createProcess } from "../actions";
 import { fetchKnownTags } from "../tag-helpers";
@@ -16,8 +17,8 @@ export default async function NewProcessPage() {
         >
           ← Voltar à lista
         </Link>
-        <div className="mt-3 flex items-baseline gap-3">
-          <span className="font-serif text-3xl italic text-[--color-claret]">§</span>
+        <div className="mt-3 flex items-center gap-3">
+          <Logo size="md" />
           <p className="label-eyebrow text-[--color-claret]">Novo registro</p>
         </div>
         <h1 className="headline mt-3 text-6xl text-[--color-ink] sm:text-7xl">

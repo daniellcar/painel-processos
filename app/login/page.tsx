@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "@/app/components/logo";
 import { LoginForm } from "./login-form";
 
 export default function LoginPage() {
@@ -18,7 +19,7 @@ export default function LoginPage() {
 
           <div className="space-y-10">
             <div className="space-y-6">
-              <span className="font-serif text-3xl italic text-[--color-claret]">§</span>
+              <Logo size="md" priority />
               <p className="label-eyebrow text-[--color-claret]">Documento I · Acesso</p>
               <h1 className="headline text-[clamp(3rem,7vw,6.5rem)] text-[--color-ink]">
                 Acesso restrito ao

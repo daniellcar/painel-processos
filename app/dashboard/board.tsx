@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { Process, Tag } from "@/lib/types";
 import { contrastText } from "@/lib/contrast";
 import { isAudioUnlocked, playBellSequence, unlockAudio } from "@/lib/bell-sound";
+import { Logo } from "@/app/components/logo";
 import { SessionAlertOverlay } from "./session-alert";
 import { CalendarView } from "./calendar-view";
 
@@ -181,8 +182,8 @@ export function Board({ initial }: { initial: Process[] }) {
       {/* Top header */}
       <header className="relative z-10 border-b border-[--color-rule] px-12 py-6">
         <div className="flex items-end justify-between gap-8">
-          <div className="flex items-baseline gap-4">
-            <span className="font-serif text-4xl italic text-[--color-claret]">§</span>
+          <div className="flex items-center gap-4">
+            <Logo size="lg" priority />
             <div>
               <div className="flex items-center gap-3">
                 <span className="relative inline-block h-1.5 w-1.5 rounded-full bg-[--color-claret]">

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { Logo } from "@/app/components/logo";
 import { signOut } from "./actions";
 
 export default async function AdminLayout({
@@ -22,8 +23,8 @@ export default async function AdminLayout({
       <header className="sticky top-0 z-50 border-b border-[--color-rule] bg-[--color-paper]/85 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 sm:px-12">
           <div className="flex items-center gap-8">
-            <Link href="/admin" className="group flex items-baseline gap-3">
-              <span className="font-serif text-2xl italic text-[--color-claret]">§</span>
+            <Link href="/admin" className="group flex items-center gap-3">
+              <Logo size="sm" priority />
               <div>
                 <div className="label-eyebrow text-[--color-claret]">
                   Painel · Administração

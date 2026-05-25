@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { motion } from "framer-motion";
 import type { Process } from "@/lib/types";
 import { contrastText } from "@/lib/contrast";
+import { Logo } from "@/app/components/logo";
 
 const TRANSITION = { duration: 0.7, ease: [0.2, 0.8, 0.2, 1] as const };
 const WEEKDAYS = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"];
@@ -101,8 +102,8 @@ export function CalendarView({
         className="flex flex-col"
       >
         <div className="mb-6 flex items-end justify-between border-b border-[--color-ink] pb-3">
-          <div className="flex items-baseline gap-3">
-            <span className="font-serif text-2xl italic text-[--color-claret]">§</span>
+          <div className="flex items-center gap-3">
+            <Logo size="sm" />
             <h2 className="headline text-3xl text-[--color-ink] sm:text-4xl">
               <span className="capitalize">{monthLabel.split(" de ")[0]}</span>{" "}
               <em className="text-[--color-ink-dim]">
