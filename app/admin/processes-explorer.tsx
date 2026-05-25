@@ -103,6 +103,12 @@ export function ProcessesExplorer({ processes }: { processes: Process[] }) {
   const hasActiveFilter =
     q.length > 0 || selectedTags.length > 0 || selectedStatuses.length > 0;
 
+  // URL de export reusa os filtros visíveis na tela.
+  const exportQs = searchParams.toString();
+  const exportHref = exportQs
+    ? `/api/admin/export?${exportQs}`
+    : "/api/admin/export";
+
   return (
     <div className="space-y-8">
       <FilterBar
@@ -115,6 +121,8 @@ export function ProcessesExplorer({ processes }: { processes: Process[] }) {
         hasActiveFilter={hasActiveFilter}
         totalShown={filtered.length}
         totalAll={processes.length}
+        exportHref={exportHref}
+        canExport={filtered.length > 0}
       />
 
       {filtered.length === 0 ? (
@@ -136,6 +144,8 @@ function FilterBar({
   hasActiveFilter,
   totalShown,
   totalAll,
+  exportHref,
+  canExport,
 }: {
   q: string;
   facets: Facets;
@@ -146,6 +156,8 @@ function FilterBar({
   hasActiveFilter: boolean;
   totalShown: number;
   totalAll: number;
+  exportHref: string;
+  canExport: boolean;
 }) {
   return (
     <section className="border border-[--color-rule] bg-[--color-paper-soft]/40 p-5">
@@ -188,6 +200,22 @@ function FilterBar({
               Limpar filtros
             </button>
           )}
+          <a
+            href={canExport ? exportHref : undefined}
+            aria-disabled={!canExport}
+            title={
+              canExport
+                ? hasActiveFilter
+                  ? `Exportar ${totalShown} processo(s) filtrado(s) em .xlsx`
+                  : `Exportar todos os ${totalAll} processos em .xlsx`
+                : "Nada para exportar"
+            }
+            className={`btn btn-text whitespace-nowrap text-xs ${
+              canExport ? "" : "pointer-events-none opacity-40"
+            }`}
+          >
+            ↓ Exportar .xlsx
+          </a>
         </div>
       </div>
 
