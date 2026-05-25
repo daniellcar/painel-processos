@@ -1,7 +1,7 @@
 import Image from "next/image";
 
-// Proporção original: 457 × 625 (≈ 0.731 W/H).
-const RATIO = 457 / 625;
+// Proporção original do PNG: 427 × 584 (≈ 0.731 W/H).
+const RATIO = 427 / 584;
 
 type Size = "sm" | "md" | "lg" | "xl";
 
