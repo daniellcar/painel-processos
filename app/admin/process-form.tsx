@@ -144,6 +144,26 @@ export function ProcessForm({ initial, action, submitLabel, knownTags = [] }: Pr
           />
         </Field>
 
+        <div className="grid grid-cols-2 gap-6">
+          <Field label="Nº da modalidade" hint="opcional · ex: 3, 12, 68">
+            <input
+              name="numero_modalidade"
+              defaultValue={initial?.numero_modalidade ?? ""}
+              placeholder="ex: 3"
+              className="field-input field-mono"
+            />
+          </Field>
+
+          <Field label="Nº do convênio" hint="opcional · exibido como etiqueta azul">
+            <input
+              name="numero_convenio"
+              defaultValue={initial?.numero_convenio ?? ""}
+              placeholder="ex: 967148"
+              className="field-input field-mono"
+            />
+          </Field>
+        </div>
+
         <Field label="Objeto" hint="descrição resumida · obrigatório">
           <textarea
             name="objeto"

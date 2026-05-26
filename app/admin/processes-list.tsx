@@ -10,8 +10,9 @@ export function ProcessesList({ processes }: { processes: Process[] }) {
   return (
     <div>
       {/* Heading row */}
-      <div className="grid grid-cols-[160px_1fr_220px_170px_120px] items-center gap-6 border-b border-[--color-ink] pb-3 text-[10px] font-medium uppercase tracking-[0.18em] text-[--color-ink-dim]">
+      <div className="grid grid-cols-[160px_72px_1fr_220px_170px_120px] items-center gap-6 border-b border-[--color-ink] pb-3 text-[10px] font-medium uppercase tracking-[0.18em] text-[--color-ink-dim]">
         <span>Nº Processo</span>
+        <span>Modal.</span>
         <span>Objeto</span>
         <span>Status</span>
         <span>Data da Sessão</span>
@@ -44,11 +45,14 @@ function ProcessRow({ p }: { p: Process }) {
 
   return (
     <li
-      className={`group grid grid-cols-[160px_1fr_220px_170px_120px] items-center gap-6 border-b border-[--color-rule-soft] py-5 transition hover:bg-[--color-paper-soft] ${
+      className={`group grid grid-cols-[160px_72px_1fr_220px_170px_120px] items-center gap-6 border-b border-[--color-rule-soft] py-5 transition hover:bg-[--color-paper-soft] ${
         pending ? "opacity-40" : ""
       }`}
     >
       <span className="truncate font-mono text-sm text-[--color-ink]">{p.numero}</span>
+      <span className="font-mono text-sm tabular text-[--color-ink-dim]">
+        {p.numero_modalidade ?? "—"}
+      </span>
       <div className="flex min-w-0 flex-col gap-1.5">
         <span
           className="truncate font-serif text-lg leading-snug text-[--color-ink]"
@@ -56,9 +60,17 @@ function ProcessRow({ p }: { p: Process }) {
         >
           {p.objeto}
         </span>
-        {p.tags && p.tags.length > 0 && (
+        {(p.numero_convenio || (p.tags && p.tags.length > 0)) && (
           <div className="flex flex-wrap gap-1.5">
-            {p.tags.map((t, i) => (
+            {p.numero_convenio && (
+              <span
+                style={{ backgroundColor: "#2C6FAC", color: "#FFFFFF" }}
+                className="inline-flex items-center rounded px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-[0.08em]"
+              >
+                {p.numero_convenio}
+              </span>
+            )}
+            {p.tags?.map((t, i) => (
               <span
                 key={i}
                 style={{ backgroundColor: t.color, color: contrastText(t.color) }}

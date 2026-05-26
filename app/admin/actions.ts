@@ -49,6 +49,8 @@ export async function createProcess(formData: FormData) {
   if (!user) redirect("/login");
 
   const numero = String(formData.get("numero") ?? "").trim();
+  const numero_modalidade = String(formData.get("numero_modalidade") ?? "").trim() || null;
+  const numero_convenio = String(formData.get("numero_convenio") ?? "").trim() || null;
   const objeto = String(formData.get("objeto") ?? "").trim();
   const status = String(formData.get("status") ?? "").trim();
   const cor = sanitizeColor(String(formData.get("cor") ?? ""));
@@ -61,7 +63,7 @@ export async function createProcess(formData: FormData) {
 
   const { data: inserted, error } = await supabase
     .from("processes")
-    .insert({ numero, objeto, status, cor, data_sessao, tags })
+    .insert({ numero, numero_modalidade, numero_convenio, objeto, status, cor, data_sessao, tags })
     .select("id")
     .single();
 
@@ -97,6 +99,8 @@ export async function updateProcess(id: string, formData: FormData) {
   if (!user) redirect("/login");
 
   const numero = String(formData.get("numero") ?? "").trim();
+  const numero_modalidade = String(formData.get("numero_modalidade") ?? "").trim() || null;
+  const numero_convenio = String(formData.get("numero_convenio") ?? "").trim() || null;
   const objeto = String(formData.get("objeto") ?? "").trim();
   const status = String(formData.get("status") ?? "").trim();
   const cor = sanitizeColor(String(formData.get("cor") ?? ""));
@@ -115,7 +119,7 @@ export async function updateProcess(id: string, formData: FormData) {
 
   const { error } = await supabase
     .from("processes")
-    .update({ numero, objeto, status, cor, data_sessao, tags })
+    .update({ numero, numero_modalidade, numero_convenio, objeto, status, cor, data_sessao, tags })
     .eq("id", id);
 
   if (error) {

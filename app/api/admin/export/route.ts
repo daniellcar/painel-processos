@@ -70,6 +70,8 @@ export async function GET(req: NextRequest) {
 
   ws.columns = [
     { header: "Número", key: "numero", width: 22 },
+    { header: "Modalidade", key: "numero_modalidade", width: 14 },
+    { header: "Nº Convênio", key: "numero_convenio", width: 16 },
     { header: "Objeto", key: "objeto", width: 60 },
     { header: "Status", key: "status", width: 32 },
     {
@@ -106,6 +108,8 @@ export async function GET(req: NextRequest) {
     }
     ws.addRow({
       numero: p.numero,
+      numero_modalidade: p.numero_modalidade ?? "",
+      numero_convenio: p.numero_convenio ?? "",
       objeto: p.objeto,
       status: p.status,
       data_sessao: p.data_sessao ? new Date(p.data_sessao) : null,

@@ -6,6 +6,8 @@ export type Tag = {
 export type Process = {
   id: string;
   numero: string;
+  numero_modalidade: string | null;
+  numero_convenio: string | null;
   objeto: string;
   status: string;
   cor: string;
@@ -17,6 +19,8 @@ export type Process = {
 
 export type ProcessInput = {
   numero: string;
+  numero_modalidade: string | null;
+  numero_convenio: string | null;
   objeto: string;
   status: string;
   cor: string;
