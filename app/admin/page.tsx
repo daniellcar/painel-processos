@@ -31,7 +31,7 @@ export default async function AdminPage() {
     : "—";
 
   return (
-    <div className="mx-auto max-w-7xl px-6 py-8 sm:px-12">
+    <div className="mx-auto max-w-screen-2xl px-6 py-8 sm:px-12">
       {/* Cabeçalho compacto: título + stats inline + ação */}
       <section className="mb-8 flex flex-wrap items-center justify-between gap-x-8 gap-y-4 border-b border-[--color-rule] pb-5">
         <div className="flex items-center gap-3">
