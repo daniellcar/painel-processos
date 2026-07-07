@@ -32,7 +32,9 @@ export function ProcessForm({ initial, action, submitLabel, knownTags = [] }: Pr
   const [statusPreview, setStatusPreview] = useState(initial?.status ?? "");
   const [tags, setTags] = useState<Tag[]>(initial?.tags ?? []);
   const [newTagLabel, setNewTagLabel] = useState("");
+  const [newTagTipo, setNewTagTipo] = useState("");
   const [newTagColor, setNewTagColor] = useState(PRESET_COLORS[0].value);
+  const [tagHint, setTagHint] = useState<string | null>(null);
   const [suggestOpen, setSuggestOpen] = useState(false);
   const [suggestIndex, setSuggestIndex] = useState(0);
   const suggestRef = useRef<HTMLDivElement | null>(null);
@@ -51,6 +53,19 @@ export function ProcessForm({ initial, action, submitLabel, knownTags = [] }: Pr
       .slice(0, 8);
   }, [newTagLabel, knownTags, tags]);
 
+  // Tipos já usados em tags anteriores — viram sugestões no datalist,
+  // evitando que a mesma coluna do .xlsx se fragmente por variação de grafia.
+  const knownTipos = useMemo(() => {
+    const byKey = new Map<string, string>();
+    for (const t of knownTags) {
+      const tipo = t.tipo?.trim();
+      if (tipo && !byKey.has(tipo.toLowerCase())) {
+        byKey.set(tipo.toLowerCase(), tipo);
+      }
+    }
+    return Array.from(byKey.values()).sort((a, b) => a.localeCompare(b));
+  }, [knownTags]);
+
   // Sempre acessar pelo índice efetivo evita estados intermediários que
   // forçariam um setState dentro de useEffect só para "consertar" o range.
   const activeSuggestIndex =
@@ -62,12 +77,16 @@ export function ProcessForm({ initial, action, submitLabel, knownTags = [] }: Pr
     setNewTagLabel(value);
     setSuggestOpen(true);
     setSuggestIndex(0);
-    // Se a label bate exatamente com uma tag conhecida, alinha a cor
-    // automaticamente — Enter já cria a tag com a cor antiga.
+    setTagHint(null);
+    // Se a label bate exatamente com uma tag conhecida, alinha cor e tipo
+    // automaticamente — Enter já cria a tag como ela era antes.
     const term = value.trim().toLowerCase();
     if (!term) return;
     const exact = knownTags.find((t) => t.label.toLowerCase() === term);
-    if (exact) setNewTagColor(exact.color);
+    if (exact) {
+      setNewTagColor(exact.color);
+      if (exact.tipo) setNewTagTipo(exact.tipo);
+    }
   }
 
   // Fecha dropdown ao clicar fora.
@@ -83,9 +102,18 @@ export function ProcessForm({ initial, action, submitLabel, knownTags = [] }: Pr
   }, []);
 
   function addTag(override?: Tag) {
-    const candidate = override ?? {
+    const tipo = newTagTipo.trim();
+    // Tag digitada do zero exige tipo — ele nomeia a coluna no .xlsx.
+    if (!override && !tipo) {
+      if (newTagLabel.trim()) {
+        setTagHint("Informe o tipo da tag — ele vira o nome da coluna no .xlsx.");
+      }
+      return;
+    }
+    const candidate: Tag = override ?? {
       label: newTagLabel.trim(),
       color: newTagColor,
+      tipo,
     };
     if (!candidate.label) return;
     if (
@@ -99,12 +127,18 @@ export function ProcessForm({ initial, action, submitLabel, knownTags = [] }: Pr
     }
     setTags([...tags, candidate]);
     setNewTagLabel("");
+    setTagHint(null);
     setSuggestOpen(false);
     setSuggestIndex(0);
   }
 
   function pickSuggestion(t: Tag) {
-    addTag(t);
+    // Sugestão antiga sem tipo herda o tipo digitado no campo, se houver.
+    const fallbackTipo = newTagTipo.trim();
+    addTag({
+      ...t,
+      ...(t.tipo ? {} : fallbackTipo ? { tipo: fallbackTipo } : {}),
+    });
   }
 
   function removeTag(idx: number) {
@@ -198,7 +232,7 @@ export function ProcessForm({ initial, action, submitLabel, knownTags = [] }: Pr
 
         <Field
           label="Tags"
-          hint="opcional · digite para reusar uma tag já cadastrada (mesma cor)"
+          hint="opcional · o tipo nomeia a coluna correspondente no .xlsx"
         >
           <div className="space-y-3">
             <div className="flex min-h-[2.25rem] flex-wrap items-center gap-2">
@@ -216,6 +250,9 @@ export function ProcessForm({ initial, action, submitLabel, knownTags = [] }: Pr
                     }}
                     className="inline-flex items-center gap-1.5 rounded px-2.5 py-1 font-sans text-xs font-medium uppercase tracking-wide"
                   >
+                    {t.tipo && (
+                      <span className="font-normal opacity-70">{t.tipo} ·</span>
+                    )}
                     {t.label}
                     <button
                       type="button"
@@ -230,8 +267,8 @@ export function ProcessForm({ initial, action, submitLabel, knownTags = [] }: Pr
               )}
             </div>
 
-            <div className="flex items-stretch gap-2">
-              <div className="relative flex-1">
+            <div className="flex flex-wrap items-stretch gap-2">
+              <div className="relative min-w-[14rem] flex-1">
                 <input
                   ref={tagInputRef}
                   type="text"
@@ -312,13 +349,37 @@ export function ProcessForm({ initial, action, submitLabel, knownTags = [] }: Pr
                           </span>
                         </span>
                         <span className="font-mono text-[10px] uppercase tracking-wide text-[--color-ink-mute]">
-                          já usada
+                          {t.tipo ?? "já usada"}
                         </span>
                       </button>
                     ))}
                   </div>
                 )}
               </div>
+              <input
+                type="text"
+                list="tag-tipos"
+                value={newTagTipo}
+                onChange={(e) => {
+                  setNewTagTipo(e.target.value);
+                  setTagHint(null);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addTag();
+                  }
+                }}
+                placeholder="Tipo (ex: Município)"
+                className="field-input field-mono w-44"
+                autoComplete="off"
+                title="Tipo da tag — nomeia a coluna no .xlsx"
+              />
+              <datalist id="tag-tipos">
+                {knownTipos.map((tipo) => (
+                  <option key={tipo} value={tipo} />
+                ))}
+              </datalist>
               <input
                 type="color"
                 value={newTagColor}
@@ -334,6 +395,11 @@ export function ProcessForm({ initial, action, submitLabel, knownTags = [] }: Pr
                 + Adicionar
               </button>
             </div>
+            {tagHint && (
+              <p className="font-serif text-xs italic text-[--color-claret]">
+                {tagHint}
+              </p>
+            )}
           </div>
         </Field>
 

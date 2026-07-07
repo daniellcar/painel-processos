@@ -18,23 +18,32 @@ function parseDataSessao(v: string | null | undefined): string | null {
   return d.toISOString();
 }
 
-function parseTags(v: string | null | undefined): { label: string; color: string }[] {
+function parseTags(
+  v: string | null | undefined,
+): { label: string; color: string; tipo?: string }[] {
   if (!v) return [];
   try {
     const parsed = JSON.parse(v);
     if (!Array.isArray(parsed)) return [];
     return parsed
       .filter(
-        (t): t is { label: string; color: string } =>
+        (t): t is { label: string; color: string; tipo?: unknown } =>
           t &&
           typeof t.label === "string" &&
           typeof t.color === "string" &&
           t.label.trim().length > 0,
       )
-      .map((t) => ({
-        label: t.label.trim().slice(0, 30),
-        color: /^#[0-9a-fA-F]{6}$/.test(t.color) ? t.color.toUpperCase() : "#7A1F12",
-      }))
+      .map((t) => {
+        const tipo =
+          typeof t.tipo === "string" && t.tipo.trim().length > 0
+            ? t.tipo.trim().slice(0, 30)
+            : undefined;
+        return {
+          label: t.label.trim().slice(0, 30),
+          color: /^#[0-9a-fA-F]{6}$/.test(t.color) ? t.color.toUpperCase() : "#7A1F12",
+          ...(tipo ? { tipo } : {}),
+        };
+      })
       .slice(0, 10);
   } catch {
     return [];

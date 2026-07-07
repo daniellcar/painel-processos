@@ -16,7 +16,11 @@ export async function fetchKnownTags(): Promise<Tag[]> {
       const key = t.label.toLowerCase();
       if (seen.has(key)) continue;
       seen.add(key);
-      tags.push({ label: t.label, color: t.color });
+      tags.push({
+        label: t.label,
+        color: t.color,
+        ...(t.tipo ? { tipo: t.tipo } : {}),
+      });
     }
   }
   return tags;

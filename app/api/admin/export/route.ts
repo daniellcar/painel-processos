@@ -55,18 +55,41 @@ export async function GET(req: NextRequest) {
     views: [{ state: "frozen", ySplit: 1 }],
   });
 
-  // Quantas colunas de tag são necessárias para cobrir o processo com mais
-  // tags do conjunto exportado.
-  const maxTags = filtered.reduce(
-    (max, p) => Math.max(max, p.tags?.length ?? 0),
-    0,
-  );
+  // Tags com tipo viram colunas nomeadas pelo próprio tipo (agrupado sem
+  // diferenciar maiúsculas/minúsculas). Tags antigas sem tipo caem nas
+  // colunas genéricas "Tag N", preservando o comportamento anterior.
+  const tipoOrder: string[] = [];
+  const tipoHeader = new Map<string, string>();
+  let maxUntyped = 0;
+  for (const p of filtered) {
+    let untyped = 0;
+    for (const t of p.tags ?? []) {
+      const tipo = t.tipo?.trim();
+      if (tipo) {
+        const key = tipo.toLowerCase();
+        if (!tipoHeader.has(key)) {
+          tipoHeader.set(key, tipo);
+          tipoOrder.push(key);
+        }
+      } else {
+        untyped++;
+      }
+    }
+    maxUntyped = Math.max(maxUntyped, untyped);
+  }
 
-  const tagColumns = Array.from({ length: maxTags }, (_, i) => ({
-    header: `Tag ${i + 1}`,
-    key: `tag_${i + 1}`,
-    width: 18,
-  }));
+  const tagColumns = [
+    ...tipoOrder.map((key, i) => ({
+      header: tipoHeader.get(key) ?? key,
+      key: `tipo_${i}`,
+      width: 18,
+    })),
+    ...Array.from({ length: maxUntyped }, (_, i) => ({
+      header: `Tag ${i + 1}`,
+      key: `tag_${i + 1}`,
+      width: 18,
+    })),
+  ];
 
   ws.columns = [
     { header: "Número", key: "numero", width: 22 },
@@ -102,9 +125,18 @@ export async function GET(req: NextRequest) {
 
   for (const p of filtered) {
     const tagFields: Record<string, string> = {};
-    const labels = (p.tags ?? []).map((t) => t.label);
-    for (let i = 0; i < maxTags; i++) {
-      tagFields[`tag_${i + 1}`] = labels[i] ?? "";
+    // Várias tags do mesmo tipo no mesmo processo compartilham a célula.
+    tipoOrder.forEach((key, i) => {
+      tagFields[`tipo_${i}`] = (p.tags ?? [])
+        .filter((t) => t.tipo?.trim().toLowerCase() === key)
+        .map((t) => t.label)
+        .join(", ");
+    });
+    const untypedLabels = (p.tags ?? [])
+      .filter((t) => !t.tipo?.trim())
+      .map((t) => t.label);
+    for (let i = 0; i < maxUntyped; i++) {
+      tagFields[`tag_${i + 1}`] = untypedLabels[i] ?? "";
     }
     ws.addRow({
       numero: p.numero,

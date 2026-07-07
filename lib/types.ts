@@ -1,6 +1,9 @@
 export type Tag = {
   label: string;
   color: string;
+  // Nomeia a coluna correspondente na exportação .xlsx.
+  // Tags antigas podem não ter tipo — caem nas colunas genéricas "Tag N".
+  tipo?: string;
 };
 
 export type Process = {
